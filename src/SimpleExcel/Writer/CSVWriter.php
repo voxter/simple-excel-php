@@ -49,7 +49,24 @@ class CSVWriter extends BaseWriter
             foreach ($worksheet->getRecords() as $record) {
                 $row = array();
                 foreach ($record as $cell) {
-                    array_push($row, $cell->value);
+                    $value = $cell->value;
+                    switch(gettype($cell->value)) {
+                        case 'string':
+                        case 'boolean':
+                        case 'double':
+                        case 'integer':
+                        case 'NULL':
+                            $value = (string)$cell->value; break;
+                        case 'object':
+                            $value = (array)$cell->value;
+                        case 'array':
+                            $value = implode(',', $value);
+                            break;
+                        default:
+                            $value = 'Error parsing field: unknown data type';
+                            break;
+                    }
+                    array_push($row, $value);
                 }
                 fputcsv($fp, $row, $this->delimiter);
             }
